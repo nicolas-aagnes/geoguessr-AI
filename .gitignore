@@ -5,3 +5,4 @@ checkpoints/
 .env
 *.DS_Store
 .vscode/
+.mypy_cache/

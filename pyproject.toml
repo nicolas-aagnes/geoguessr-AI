@@ -6,6 +6,10 @@ authors = ["Nicolas Aagnes"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
+opencv-python = "^4.5.1"
+mss = "^6.1.0"
+Pillow = "^8.1.2"
+numpy = "^1.19.2"
 tensorflow = "^2.4.1"
 
 [tool.poetry.dev-dependencies]
@@ -31,12 +35,3 @@ known_third_party = []
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-
-
-
-
-
-
-
-
