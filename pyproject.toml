@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "geoguessr-ai"
+version = "0.1.0"
+description = ""
+authors = ["Nicolas Aagnes"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+tensorflow = "^2.4.1"
+
+[tool.poetry.dev-dependencies]
+black = "^19.3b0"
+isort = "^4.3"
+pre-commit = "^1.20"
+pytest = "^5.2"
+mypy = "^0.740.0"
+flake8 = "^3.7"
+
+[tool.black]
+line-length = 120
+target_version = ['py37']
+include = '\.py$'
+
+[tool.isort]
+line_length=120                # corresponds to -w  flag
+multi_line_output=3            # corresponds to -m  flag
+include_trailing_comma=true    # corresponds to -tc flag
+skip_glob = '^((?!py$).)*$'    # this makes sort all Python files
+known_third_party = []
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+
+
+
+
+
+
+
