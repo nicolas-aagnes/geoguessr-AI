@@ -9,6 +9,9 @@ def get_model(input_shape=(640, 640, 3), num_classes=109):
     inputs = tf.keras.Input(shape=input_shape)
 
     x = tf.keras.applications.xception.preprocess_input(inputs)
+    x = tf.keras.layers.experimental.preprocessing.RandomFlip("horizontal")(x)
+    x = tf.keras.layers.experimental.preprocessing.RandomZoom((-0.15, 0.0), None, "reflect")(x)
+
     x = base_model(x, training=False)
 
     x = keras.layers.Conv2D(512, 4, 2)(x)
