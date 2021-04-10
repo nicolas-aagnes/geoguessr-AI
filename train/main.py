@@ -41,7 +41,7 @@ def main():
         x=dataset_train,
         validation_data=dataset_val,
         callbacks=[checkpoint, keras.callbacks.ReduceLROnPlateau()],
-        epochs=1,
+        epochs=100,
     )
 
 
