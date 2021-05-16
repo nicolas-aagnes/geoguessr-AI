@@ -34,7 +34,7 @@ line_length=120                # corresponds to -w  flag
 multi_line_output=3            # corresponds to -m  flag
 include_trailing_comma=true    # corresponds to -tc flag
 skip_glob = '^((?!py$).)*$'    # this makes sort all Python files
-known_third_party = ["dotenv", "google_streetview", "model", "numpy", "pandas", "tensorflow", "tqdm"]
+known_third_party = ["PIL", "cv2", "dotenv", "google", "google_streetview", "model", "mss", "numpy", "pandas", "pycountry", "tensorflow", "tqdm"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
