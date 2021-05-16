@@ -14,3 +14,5 @@ v2 model specs:
 
 To run on screen:
 `poetry run python run.py --data data --model mode-v2`
+
+Recording screen occupies two thirds and terminal window one third.
