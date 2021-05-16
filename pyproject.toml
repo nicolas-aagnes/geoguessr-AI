@@ -15,6 +15,10 @@ google-streetview = "^1.2.9"
 pandas = "^1.2.3"
 tqdm = "^4.59.0"
 python-dotenv = "^0.16.0"
+pytesseract = "^0.3.7"
+google-cloud = "^0.34.0"
+google-cloud-vision = "^2.3.1"
+pycountry = "^20.7.3"
 
 [tool.poetry.dev-dependencies]
 black = "^19.3b0"
