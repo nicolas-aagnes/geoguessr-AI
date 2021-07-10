@@ -44,7 +44,7 @@ def get_color(prob):
 
 
 def print_prediction_v2(class_name, prob, previous_class, previous_prob, languages, *args, **kwargs):
-    if class_name == "Korea, South":  # Occurs too often so ignore it.
+    if class_name == "Korea, South" or previous_class == "Korea, South":  # Occurs too often so ignore it.
         return
 
     languages_text = f"{colors.OKBLUE}{' '.join(languages)}{colors.ENDC}" if len(languages) > 0 else f"{colors.ENDC}"
