@@ -1,5 +1,7 @@
 import argparse
+import io
 import os
+from typing import List
 
 import cv2
 import mss
@@ -41,75 +43,67 @@ def get_color(prob):
         return colors.FAIL
 
 
-def print_prediction_v2(class_name, prob, previous_class, previous_prob, *args, **kwargs):
-    if previous_class is not None and class_name != previous_class:
-        print(" " * 25, end="\r")
-        print(f"{get_color(previous_prob)}{previous_prob:3d}%  {previous_class}{colors.ENDC}")
+def print_prediction_v2(class_name, prob, previous_class, previous_prob, languages, *args, **kwargs):
+    if class_name == "Korea, South" or previous_class == "Korea, South":  # Occurs too often so ignore it.
+        return
 
-    print(f"{get_color(prob)}{prob:3d}%  {class_name}{colors.ENDC}", end="\r")
+    languages_text = f"{colors.OKBLUE}{' '.join(languages)}{colors.ENDC}" if len(languages) > 0 else f"{colors.ENDC}"
+
+    if previous_class is not None and class_name != previous_class:
+        print(" " * 70, end="\r")
+        print(f"{get_color(previous_prob)}{previous_prob:3d}%  {previous_class:25s}  {languages_text}")
+
+    print(f"{get_color(prob)}{prob:3d}%  {class_name:25s}  {languages_text}", end="\r")
 
 
 def is_blurry(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    return cv2.Laplacian(gray, cv2.CV_64F).var() < 200.0
+    return cv2.Laplacian(gray, cv2.CV_64F).var() < 125.0
 
 
-def detect_text(image: np.ndarray):
+def detect_text(image: np.ndarray, client: vision.ImageAnnotatorClient):
     """Detect text in the image."""
-    import io
-
-    client = vision.ImageAnnotatorClient()
-
     image = Image.fromarray(image)
     output = io.BytesIO()
     image.save(output, format="JPEG")
     image = vision.Image(content=output.getvalue())
 
     response = client.text_detection(image=image)
-    languages = []
 
+    languages = []
     for page in response.full_text_annotation.pages:
         for block in page.blocks:
-
             for paragraph in block.paragraphs:
                 if len(paragraph.property.detected_languages) > 0:
                     language_code = paragraph.property.detected_languages[0].language_code
-                    language = pycountry.languages.get(alpha_2=language_code).name
-                    confidence = paragraph.property.detected_languages[0].confidence
-                    languages.append((language, confidence))
+                    try:
+                        language = pycountry.languages.get(alpha_2=language_code).name
+                        confidence = paragraph.property.detected_languages[0].confidence
+                        if confidence > 0.98 and language != "English":
+                            languages.append((language, confidence))
+                    except Exception:
+                        pass
 
-    print(languages)
-    import sys
+    languages = sorted(languages, key=lambda x: x[1], reverse=True)
 
-    sys.exit(1)
+    top_languages: List[str] = []
+    for language, _ in languages:
+        if language not in top_languages:
+            top_languages.append(language)
+        if len(top_languages) == 3:
+            break
 
-    texts = response.text_annotations
-    print("Texts:")
-
-    for text in texts:
-        print(dir(text))
-        print()
-        print(text)
-
-        print('\n"{}"'.format(text.description))
-
-        vertices = ["({},{})".format(vertex.x, vertex.y) for vertex in text.bounding_poly.vertices]
-
-        print("bounds: {}".format(",".join(vertices)))
-
-    if response.error.message:
-        raise Exception(
-            "{}\nFor more info on error messages, check: "
-            "https://cloud.google.com/apis/design/errors".format(response.error.message)
-        )
+    return top_languages
 
 
 def screen_record(model, dataset):
-    box = {"top": 400, "left": 300, "width": 1000, "height": 1000}
+    box = {"top": 400, "left": 100, "width": 1000, "height": 1000}
 
     title = "screen"
     sct = mss.mss()
+
+    client = vision.ImageAnnotatorClient()
 
     cv2.namedWindow(title)
     cv2.moveWindow(title, 420, 1250)
@@ -121,7 +115,7 @@ def screen_record(model, dataset):
         img = np.array(Image.fromarray(img).resize((640, 640)).convert("RGB"))
 
         if not is_blurry(img):
-            # detect_text(img) # TODO: Implement OCR reading on frame.
+            languages = detect_text(img, client)  # TODO: Implement OCR reading on frame.
 
             prediction = tf.squeeze(model(img[np.newaxis, ...], training=False))
 
@@ -129,7 +123,7 @@ def screen_record(model, dataset):
             class_name = dataset.class_names[class_id]
 
             prob = int(round(prediction[class_id].numpy() * 100, 0))
-            print_prediction_v2(class_name, prob, previous_class, previous_prob)
+            print_prediction_v2(class_name, prob, previous_class, previous_prob, languages)
 
             previous_class, previous_prob = class_name, prob
 
